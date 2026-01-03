@@ -1,0 +1,35 @@
+name: Build Network Port Detector
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/NetworkPortDetector.csproj
+
+    - name: Build
+      run: dotnet build src/NetworkPortDetector.csproj -c Release --no-restore
+
+    - name: Publish
+      run: dotnet publish src/NetworkPortDetector.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: NetworkPortDetector-exe
+        path: src/bin/Release/net8.0-windows/win-x64/publish/NetworkPortDetector.exe
